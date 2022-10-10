@@ -47,8 +47,8 @@ The script produces the following outputs from UBWPP netcdf data in Hihgh and Lo
 **Z_mode:** Equivalent reflectivity considering only liquid drops (dBZ)<br />
 **U_mode:** Horizontal wind component, zonal velocity  (m s<sup>-1</sup>). Available if the devices has more than one beam.<br />
 **V_mode:** Horizontal wind component, meridional velocity  (m s<sup>-1</sup>). Available if the devices has more than one beam<br />
-**shape parameter_mode:** shape parameter from the Drop Size Distribution <br />#######(log10(m<sup>-3</sup> mm<sup>-1</sup>)) only for liquid type<br />
-**slope parameter_mode:** slope parameter from the Drop Size Distribution (m<sup>-1</sup>)<br />#######(log10(m<sup>-3</sup> mm<sup>-1</sup>)) only for liquid type<br />
+**shape parameter_mode:** shape parameter from the Drop Size Distribution <br />
+**slope parameter_mode:** slope parameter from the Drop Size Distribution (m<sup>-1</sup>)<br />
 **log10(N0)_mode:** Drop Size Distribution (log10(m<sup>-4-mu</sup>)) supposing that all hydrometeors are in liquid phase<br />
 **SNR_mode:** Signal noise relation from signal (dB)<br />
 **VKEF_mode:** Vertical kinetic energy (g s<sup>-3</sup>)<br />
