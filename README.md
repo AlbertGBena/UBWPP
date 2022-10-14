@@ -58,7 +58,7 @@ The script produces the following outputs from UBWPP netcdf data in High and Low
 **time_utc:** Time vector in UTC format
 
 If the user applies -Pot parameters and additional menu appears:
-Signal without processing in three dimensions (Time, Height and bins):
+Signal without processing in three dimensions (Time, Height and bins):<br />
 **P1_mode:** Power returned in whole spectra in beam 1 (W)<br />
 **P2_mode:** Power returned in whole spectra in beam 2 (W), if the beam is avalaible<br />
 **P3_mode:** Power returned in whole spectra in beam 3 (W), if the beam is avalaible<br />
