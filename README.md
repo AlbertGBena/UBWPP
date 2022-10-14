@@ -46,7 +46,7 @@ The script produces the following outputs from UBWPP netcdf data in High and Low
 **RR_mode:** Rain rate (mm h<sup>-1</sup>)<br />
 **Z_mode:** Equivalent reflectivity considering only liquid drops (dBZ)<br />
 **U_mode:** Horizontal wind component, zonal velocity  (m s<sup>-1</sup>). Available if the device has more than one beam.<br />
-**V_mode:** Horizontal wind component, meridional velocity  (m s<sup>-1</sup>). Available if the devices ha more than one beam.<br />
+**V_mode:** Horizontal wind component, meridional velocity  (m s<sup>-1</sup>). Available if the device has more than one beam.<br />
 **shape parameter_mode:** shape parameter from the Drop Size Distribution <br />
 **slope parameter_mode:** slope parameter from the Drop Size Distribution (m<sup>-1</sup>)<br />
 **log10(N0)_mode:** Drop Size Distribution (log10(m<sup>-4-mu</sup>)) supposing that all hydrometeors are in liquid phase<br />
