@@ -86,12 +86,6 @@ def AvoidBadSignal(matrix,mask):
                     
                     matrix[i][j]=np.nanmean((matrix[i+1][j],matrix[i-1][j]))
 
-                        #if np.isnan(matrix[i+1][j]):
-                        #    matrix[i][j]=matrix[i-1][j]+np.nanmean(matrix[i+1][j],matrix[i-1][j])
-                        #if np.isnan(matrix[i-1][j]):
-                        #    matrix[i][j]=matrix[i+1][j]-np.nanmean(matrix[i+1][j],matrix[i-1][j])
-                
-
 
     return matrix
 
@@ -115,13 +109,9 @@ def Extrapolate(v1,v2,p):#v1 is the height and v2 is the paaremetr to extrapolat
     #v1_last=v1[0:7]
     v2_last=np.copy(v2)
     Para=np.count_nonzero(~np.isnan(v3))
-    #print(len(v3),Para)
-    if Para==len(v3):#condition to extrapolate
-    
-        #print(v4,v3)
-        v1_cut=np.copy(v1[0:7])
-        #print(v1_cut)
 
+    if Para==len(v3):#condition to extrapolate
+        v1_cut=np.copy(v1[0:7])
         f = inter_sci.interp1d(v4,v3,fill_value="extrapolate")
         ynew=f(v1_cut)
         if p==1 or p==2:
@@ -204,10 +194,7 @@ def PeaksAll(Pot,alt,velX,Noise,att,cte_ra,TimeStamp):
                 bimodal.append(np.nan)
                 #Min_p.append(0)
             else:
-                
-                
-                #print('resultat',str(vector),str(round(eix_y[k],2)),str(round(Noi_plot[k],2)))
-                
+            
                 if np.isnan(vector_O[k]).all():
                     snr.append(np.nan)
                     v.append(np.nan)
@@ -251,23 +238,23 @@ def PeaksAll(Pot,alt,velX,Noise,att,cte_ra,TimeStamp):
                         
                         vector,v_b,vec_air,vec_hidro,moments_m,m_air,m_hidro=peaksfinder(vector_O[k], Noi_plot[k], eix_x)
                         bimodal.append(v_b)
-                        if np.nansum(bimodal)>0:#suposem que si hem detectat algun bimodal en el perfil, tenim precipitacio
+                        if np.nansum(bimodal)>0:#Bimodal detection in profile , there is precipitation
                             if np.isnan(vec_hidro).all():
                                 vec_hidro=np.copy(vec_air)
-                        #print(round(np.nanmax(vector),2),round(Noi_plot[k],2),round(alt[k],2))
+
                         
                         val_ratio=np.nanmax(vector)/(np.nanstd(vector))
                         val_snr=10.*np.log10(np.nanmax(vector)/Noi_plot[k])
                         val_ratio=np.nanmax(vector)/(np.nanstd(vector))
                         val_snr=10.*np.log10(np.nanmax(vector)/Noi_plot[k])
-                        ######PER LA COMPOSICIO AIRE+HIDRO
+                        ######COMPOSITION AIR+PRECIPIATATION
                         
                         W_med=moments_m[0];sig=moments_m[1];ske=moments_m[2];kur=moments_m[3]
-                        #####PER EL VALOR DEL AIRE
+                        #####TO AIR
                         
                         W_med_a=m_air[0];sig_a=m_air[1];ske_a=m_air[2];kur_a=m_air[3]
 
-                        #####PER EL VALOR DEL AIRE
+                        #####TO PRECIPIATTION
                         
                         W_med_hidro=m_hidro[0];sig_hidro=m_hidro[1];ske_hidro=m_hidro[2];kur_hidro=m_hidro[3]
 
@@ -305,19 +292,12 @@ def PeaksAll(Pot,alt,velX,Noise,att,cte_ra,TimeStamp):
                             #r_w_std_h.append(Interval)
                             Max.append(10*np.log10(np.nansum(vector)))
                             if k==1:
-                                z.append(np.nan)#treiem la primera altura ja que dona senyals de potencia molt baixos
+                                z.append(np.nan)#The first height is extrated because is noisy signal
                             else:
                                 if np.isnan(np.nansum(vector)) or np.nansum(vector)<=0:
                                     z.append(np.nan)
                                 else:
                                     z.append(10*np.log10(np.nansum(vector))+20.*np.log10(eix_y[k])+Att-cte_ra)
-                            #c2n.append(z[-1]*.1-13.4)
-                            #print('minim',round(np.nanmin(vector),1), 'altura ',round(alt[k],1))
-                            #if np.nanmin(vector)>100000:
-                            #    Min_p.append(1)
-                                #print('minim',round(np.nanmin(vector),1),'decision',Min_p[-1], 'altura ',round(alt[k],1))
-                            #else:
-                            #    Min_p.append(0)
 
                             
                 p_final.append(vector)
@@ -332,35 +312,22 @@ def PeaksAll(Pot,alt,velX,Noise,att,cte_ra,TimeStamp):
             Min.append(np.nanmin(p_final[i]))
         if j==0:
 
-            if np.nanmin(Min)>100000:#nomes guardo en beam0
+            if np.nanmin(Min)>100000:#Save Beam0
                 Mask.append(1)
 
             else:
                 Mask.append(0)
 
-        ##EXTRAPOLATION THE VALUES TO the frist three gates--> En Joan ho desestima el 11/03/2022
         
-        ####z=Extrapolate(alt,z,0);v=Extrapolate(alt,v,1);v_m=Extrapolate(alt,v_m,1);Sig=Extrapolate(alt,Sig,2);Sk=Extrapolate(alt,Sk,0);Kur=Extrapolate(alt,Kur,0)
+        
+        
         
         c2n=np.copy(z)*.1-13.4#equation from equality......
 
-        #print('despres',np.around(z,decimals=1))
-        ##plt.subplot(111)
-        ##plt.scatter(v_m,alt)
-        ##plt.xlabel('speed (m/s)')
-        ##plt.ylabel('height (m)')
-        ##plt.grid()
-        ##plt.xlim(-12,12)
-        ##plt.title('Beam '+str(j)+' at '+str(unix2date(TimeStamp)))
-        ##plt.show()
-
+        
         P_FINAL.append(p_final);Z_FINAL.append(z);C2N.append(c2n);VEL.append(v);VEL_M.append(v_m);SNR.append(snr)
         SIG.append(Sig);SK.append(Sk);KUR.append(Kur);V_AIR.append(v_air);V_HIDRO.append(v_hidro)
-        #    P_FINAL=p_final;Z_FINAL=z;C2N=c2n;VEL=v;VEL_M=v_m;SNR=snr
-        #    SIG=Sig;SK=Sk;KUR=Kur
-        #else:
-        #    P_FINAL=np.vstack((P_FINAL, p_final));Z_FINAL=np.vstack((Z_FINAL,z));C2N=np.vstack((C2N, c2n));VEL=np.vstack((VEL, v));VEL_M=np.vstack((VEL_M, v_m))
-        #    SNR=np.vstack((SNR, snr));SIG=np.vstack((SIG, Sig));SK=np.vstack((SK, Sk));KUR=np.vstack((KUR, Kur))
+        
     return P_FINAL,Z_FINAL,C2N,VEL,VEL_M,SIG,SK,KUR,SNR,Mask,V_AIR,V_HIDRO#no tenen la primera altura-->H[0]
 
 def Moments(vector,eix_x):
@@ -371,7 +338,7 @@ def Moments(vector,eix_x):
     kur=np.nansum(np.multiply((eix_x-W_med)**4,vector))/(PT*sig**4)-3.#kurtosis normalized
     return W_med,sig,ske,kur
 
-def peaksfinder(vector, noise, eixX):#funcio per detectar el pic o pics de la senyal
+def peaksfinder(vector, noise, eixX):#Detection peak function
     v1=np.copy(vector)
 
     
@@ -517,9 +484,7 @@ def peaksfinder(vector, noise, eixX):#funcio per detectar el pic o pics de la se
     
     w_f,sig_f,sk_f,ku_f=Moments(v_final,eixX)
     moments_final=[w_f,sig_f,sk_f,ku_f]
-##    plt.plot(v_final,'b',alpha=.5)
-##    plt.plot(vector,'r',alpha=.5)
-##    plt.show()
+
     
 
     return v_final,v_bimodal,v_air,v_hidro,moments_final,m_air,m_hidro
@@ -530,61 +495,43 @@ def SmoothMatrix(matrix):#the function analyze the matrix and if found differenc
     for i in range(len(matrix[0])):#insise 1 hegight
         for j in range(len(matrix)-1):#insed one time
             if j==0:
-                #if j==0:#primer perfila  t=0
+                
                 Dif1=matrix[j+1][i]-matrix[j][i]
                 Dif2=matrix[j+2][i]-matrix[j+1][i]
-                if np.isnan(Dif1) and np.isnan(Dif2):#valor entre dos nans
+                if np.isnan(Dif1) and np.isnan(Dif2):#Value between nan values
                     n_matrix[j][i]=np.nan
-                if ~np.isnan(Dif1):#el valor anterior es anna, pero el poserior no
+                if ~np.isnan(Dif1):#the before value is ann but the next no
                     if abs(Dif1)>LimitValue:
                         n_matrix[j][i]=np.nanmean([matrix[j+1][i],matrix[j][i]])
                     
-                #else:#darrer perfil a t=len(matrix)-1
-                    
-                #    Dif1=matrix[j+1][i]-matrix[j][i]
-                #    Dif2=matrix[j][i]-matrix[j-1][i]
-                #    if np.isnan(Dif1) and np.isnan(Dif2):#valor entre dos nans
-                #        n_matrix[j][i]=np.nan
-                #    if ~np.isnan(Dif2):#el valor anterior es anna, pero el poserior no
-                #        if abs(Dif2)>6.:
-                #            n_matrix[j][i]=np.nanmean(matrix[j+2][i],matrix[j+1][i])
+                
                 
             else:
                 Dif1=matrix[j][i]-matrix[j-1][i]
                 Dif2=matrix[j+1][i]-matrix[j][i]
-                if np.isnan(Dif1) and np.isnan(Dif2):#valor entre dos nans
+                if np.isnan(Dif1) and np.isnan(Dif2):#Value between nan values
                     n_matrix[j][i]=np.nan
-                if np.isnan(Dif1) and ~np.isnan(Dif2):#el valor anterior es anna, pero el poserior no
+                if np.isnan(Dif1) and ~np.isnan(Dif2):#the before value is ann but the next no
                     if abs(Dif2)>LimitValue:
                         n_matrix[j][i]=np.nanmean([matrix[j+1][i],matrix[j][i]])
-                if ~np.isnan(Dif1) and np.isnan(Dif2):#el valor anterior es anna, pero el poserior no
+                if ~np.isnan(Dif1) and np.isnan(Dif2):#the before value is ann but the next no
                     if abs(Dif1)>LimitValue:
                         n_matrix[j][i]=np.nanmean([matrix[j-1][i],matrix[j][i]])
-                if ~np.isnan(Dif1) and ~np.isnan(Dif2):#el valor anterior es anna, pero el poserior no
+                if ~np.isnan(Dif1) and ~np.isnan(Dif2):#the before value is ann but the next no
                     if abs(Dif1)>LimitValue and abs(Dif2)>LimitValue:
                         n_matrix[j][i]=np.nanmean([matrix[j-1][i],matrix[j+1][i]])
 
     return n_matrix
 
 
-                    
-
-
-
-
-            
-
-
-
-
-def ExtractNoise(matrix,vector,Nbeams):#matrix -->la entrada es una matriu, senyal, amb el nombre de beams *num Heights*num bins. El vector es el soroll amb Num beams*NumHeights
-    M2=[]#sera la matriu de sortida
-    for i in range(Nbeams):#entrem en cada beam
+def ExtractNoise(matrix,vector,Nbeams):#matrix -->Beams number *num Heights*num bins. The noise structure is Num beams*NumHeights
+    M2=[]#It will be the out matric
+    for i in range(Nbeams):#Inside Beam
         v1=vector[i]
         m1=matrix[i]
         m2=[]
-        for j in range(len(v1)):#entrem en cada altura
-            m2.append(m1[j]-v1[j])#restem el valor del soroll
+        for j in range(len(v1)):#Inside height gate
+            m2.append(m1[j]-v1[j])#extact the noise level
         M2.append(m2)
     return M2
 
@@ -679,27 +626,19 @@ def Inter1D(vector):
 
 
 
-def Ave_NoiseAndPeaks(P,noi,eix_X):#P es potencia, on forma numAv*Nheight*Nbins / Noi es el soroll agupat en numAv*Nheights /eix_X es le vector velocitat té dimensions Nbins
+def Ave_NoiseAndPeaks(P,noi,eix_X):#P is potence and his struture is numAv*Nheight*Nbins / Noi is the noise with the next structure numAv*Nheights /eix_X is the speed vector with Nbins.
     W_last_F=[];Sigma_F=[];Ske_F=[];Kur_F=[];P_cor_F=[];Snr_F=[]
     #print(len(P),NBeams)
     for k in range(len(P)):
         P_last=np.copy(P[k])
-        #Ara el senyal ja no té soroll
-        #for i in range(len(noi)):#entrem dins cada numAv
-        #    P_withoutNoise=[]
-        #P_last=np.copy(P)
-        #for j in range(len(noi)):#entrem a cada altura
-            #P_withoutNoise.append(P[j]-noi[j])
-            
-        #    P_last.append(P[j]-noi[j])
-        #P_last=np.nanmean(P_C,axis=0)#potencia promig sense soroll
+
         W_last=[];Sigma=[];Ske=[];Kur=[];P_cor=[];Snr=[]
-        for i in range(len(P_last)):#entrema  acda altura
+        for i in range(len(P_last)):#Inside height gate
             v=P_last[i]
-            P_norm=np.copy(v)/np.nanmax(v)#normalitzada
+            P_norm=np.copy(v)/np.nanmax(v)#normalized
             std_P=np.nanstd(P_norm)
             P_norm[P_norm<=std_P]=np.nan
-            #Trobem el maxims de la senyal
+            #Maximun from signal
             Av_vel=[];V_vel=[]
             w=[];M_w=[];IndP=[]
             for j in range(len(P_norm)):
@@ -710,7 +649,7 @@ def Ave_NoiseAndPeaks(P,noi,eix_X):#P es potencia, on forma numAv*Nheight*Nbins 
                         Av_vel.append(eix_X[j])
                         V_vel.append(P_norm[j])
                         IndP.append(j)
-                        #print('velo del max',eix_X[j],v_med_C[j],std_med)
+                        
             n_peak=[]
             if not Av_vel or np.isnan(v).all():
                 if np.isnan(v).all():
@@ -745,9 +684,9 @@ def Ave_NoiseAndPeaks(P,noi,eix_X):#P es potencia, on forma numAv*Nheight*Nbins 
                         Peak=n_peak[0]
                     else:
                         
-                        W=w[np.nanargmax(M_w)]#es la velocitat final obtinguda
+                        W=w[np.nanargmax(M_w)]#The final speed is obtained
                         Peak=n_peak[np.nanargmax(M_w)]
-                    ######refem el senyal    
+                    ######reconstruct the signal   
                     Signal=[];i_Ind=0;f_Ind=len(P_norm)
                     for j in range(Peak):
                         if Peak-j-1==0:
@@ -763,7 +702,7 @@ def Ave_NoiseAndPeaks(P,noi,eix_X):#P es potencia, on forma numAv*Nheight*Nbins 
                             f_Ind=Peak+j
                             
                             break
-                    #print('index inici i final',i_Ind,f_Ind)
+                    
                     for j in range(len(v)):
                         if j>=i_Ind and j<=f_Ind:
                             Signal.append(v[j])
@@ -801,7 +740,7 @@ def VertInterp(m1,m2,speed):#in two matrix, out 1 matrix:
             dif2=ver[i+1]-ver[i]
             dif3=ver[i+1]-ver[i-1]
             if dif3<=6. and dif1>=6.:
-##                print('INTERPOLACIO NECESSARIA')
+
                 ver[i]=((ver[i+1]-ver[i-1])/2.)+ver[i-1]
            
     return ver
@@ -840,7 +779,9 @@ def Direction (u,v):#determinate the direction of the horizontal wind
             if u<=0 and v>=0:
                 Dout=180.-angle
     return Dout
-##type2 is from https://journals.ametsoc.org/view/journals/bams/76/10/1520-0477_1995_076_1717_usmdfn_2_0_co_2.xml  amb alguns canvis
+
+
+##type2 is from https://journals.ametsoc.org/view/journals/bams/76/10/1520-0477_1995_076_1717_usmdfn_2_0_co_2.xml  with some contributions
 def Type2(ZeVert,W,sigw,eixV,alt,ske):#entra una matriu amb temps i altures
     dv=[]#speed variation with height
     for j in range(len(alt)):
@@ -860,20 +801,20 @@ def Type2(ZeVert,W,sigw,eixV,alt,ske):#entra una matriu amb temps i altures
                 
             else:
 
-                if np.power(sigw[i][j],2)<1. and W[i][j]<2.*dv[j]:#cas de neu
+                if np.power(sigw[i][j],2)<1. and W[i][j]<2.*dv[j]:#Snow
                     EstType.append(-10.)
                 else:
                     if W[i][j]>=3.*dv[j] :
                         if np.power(sigw[i][j],2)<=4:
-                            EstType.append(10.)#AIXO ES STRATIFORME, ara li dono el mateix valor que al covectiu perque els fusiono
+                            EstType.append(10.)#STRATIFORM, now with the same value to convective beacise then they are joined
                         if W[i][j]>2.*dv[j] and W[i][j]<3.*dv[j]:
-                            EstType.append(0)#AIXO ES mixed
+                            EstType.append(0)#Mixed
             if len(EstType)-1<j:
-                if ZeVert[i][j]<20:#limit oer neu
+                if ZeVert[i][j]<20:#limit to snow
                     EstType.append(-10.)
                 else:
 
-                    EstType.append(20.)#AIXO ES UNKNOWN
+                    EstType.append(20.)#UNKNOWN
         
         for m in range(len(EstType)):#to avoid sporadic values
             if m!=0 and m!=len(EstType)-1:
@@ -901,7 +842,7 @@ def Type2(ZeVert,W,sigw,eixV,alt,ske):#entra una matriu amb temps i altures
 
         if i==0:
             Type_F=EstType
-        #    print(EstType)
+        
         else:
             
             Type_F=np.vstack((Type_F,EstType))
@@ -912,14 +853,14 @@ def Type2(ZeVert,W,sigw,eixV,alt,ske):#entra una matriu amb temps i altures
 
 
 
-def Type(ZeVert,W,sigw,eixV,alt):#entra una matriu amb temps i altures
+def Type(ZeVert,W,sigw,eixV,alt):#Input Matrix with struture time x height
     dv=[]#speed variation with height
     for j in range(len(alt)):
 
         dv.append(1+3.68*10**-5*alt[j]+1.71*10**-9*alt[j]**2)
 
     Type_F=[]
-    for i in range(len(W)):#entrem en un temps, per tant tenim el perfil d'altura
+    for i in range(len(W)):#Indeside tie, so the profile is obtained
 
         EstType=[]#here the values from type are recorded -10 for snow, 0 for mixed, and 10 for liquid, 20 unknown
         Cfact=2#value from cover factor, is the number multiplicate to sigma, Initially I considered as 2.
@@ -977,9 +918,7 @@ def Type(ZeVert,W,sigw,eixV,alt):#entra una matriu amb temps i altures
                     EstType.append(10)#rain
                 if ~np.isnan(S) and np.isnan(L):#case not liquid, but possible wrong election
                     EstType.append(-10)#snow
-                #print('vels',round(w,2),round(vsnow,2),round(vwater,2),EstType[-1],round(s,2),'height',j)
-                #print('S value',round(S,1),'L value',round(L,1))
-                #print('height',round(alt[i],0),'rain ',round(dv[i]*vwater,1),'snow ',round(dv[i]*vsnow,1),'real ',round(w,2),'width',round(Cfact*s,2),'Decision',EstType[-1])
+                
 
         for m in range(len(EstType)):#to avoid sporadic values
             if m!=0 and m!=len(EstType)-1:
@@ -1006,11 +945,11 @@ def Type(ZeVert,W,sigw,eixV,alt):#entra una matriu amb temps i altures
                     EstType[m]=np.nan
         if i==0:
             Type_F=EstType
-        #    print(EstType)
+        
         else:
 
             Type_F=np.vstack((Type_F,EstType))
-        #    print(EstType)                
+        
 
 
     return Type_F #return the vector with the estimation, where -10 is snow, 0 is mixed and 10 is liquid, 20 is unknown
@@ -1033,7 +972,7 @@ def Read1FileNci(NameFile):#read the file to find the minium value for ncivrai a
     
     LHeader=np.ndarray((1,),dtype='<i2',buffer=byte[0:2])
     Size=int(LHeader[0])
-##    print('size',Size)
+
 
     Header=np.ndarray((Size,),dtype='<i2',buffer=byte[0:Size*2])
     LenHeader=int(Header[0])
@@ -1044,8 +983,7 @@ def Read1FileNci(NameFile):#read the file to find the minium value for ncivrai a
     N_Pic=int(Header[45])
     NSPEC=int(Header[5])#number of cohorent integrations
     NCIVRAI=int(Header[6])*int(Header[63])*int(Header[41])
-##    print('NCIVRAI',NCIVRAI)
-##    print('intgr incohe',int(Header[5]))
+
     
     Type='High'
     Contador=0
@@ -1056,7 +994,7 @@ def Read1FileNci(NameFile):#read the file to find the minium value for ncivrai a
     while True:
 
                 
-        LenMoments=((4*N_Pic)+1)*NHTS#fiquem 4 perque tenim vel,sig,noise,snr,skew. he tret la quality
+        LenMoments=((4*N_Pic)+1)*NHTS#the value of 4 is imposed because we don't want the quality value, so we get vel,sig,noise,snr,skew.
         OffsetValues=(LenMoments+Size)*2
         LonTrama=(Size+LenMoments+(NPTSP*NHTS))*2
 
@@ -1066,7 +1004,7 @@ def Read1FileNci(NameFile):#read the file to find the minium value for ncivrai a
         TamanyFitxer=TamanyFitxer+(LonTrama/2)
 
 
-        ##CALCULO ALGUNS PAARAMETRES
+        ##Some parameters
            
         pp=int(Header[7])*int(Header[32])*(10**-9)
         fri=1/pp
@@ -1134,13 +1072,11 @@ def rainrate(al1,al2,al3,vel,ref,U,V):
             else:
                 
                 f1=np.log(va1)*(-1/(x+7))
-    ##            print(f1)
+    
 
                 f2=np.log(va2)
                 mu=0.
-    ##            plt.plot(f1,'b')
-    ##            plt.plot(f2,'r')
-    ##            plt.show()
+    
                 for j in range(len(f1)-1):
             
                     if f2[j]-f1[j]>=0 and f2[j+1]-f1[j+1]<=0:
@@ -1231,20 +1167,20 @@ def Deletesporius(vector):
 
     return v
              
-def ZeEval(alt,CTE,ATT,P,elva,snr,raindetc):#nomes ho trobo pel valor de beam 1
-##    print('ateniation',ATT)
+def ZeEval(alt,CTE,ATT,P,elva,snr,raindetc):#Only use the values from Beam0
+
     snr1=snr[0]
     p1=P[0]
-    LimitSNR=10.#dB to a good signal, i think that is 15, but try with 5
+    LimitSNR=10.#dB to a good signal, i think that is 15, but alse I try with 5
     LimitReflec=-10.#less of this value the reflective has not sense
     ##The reflectivity for each beam is calculated
     ze1=[];
     for l in range(len(alt)):# IS POSSIBLE TO DO MEAN FROM DBZ? OR IS BETTER TO DO THE MEAN FROM PR??????????
-        #print('valor de rain',raindetc)
+        
         if np.isnan(snr1[l]) or raindetc==0 or snr1[l]<LimitSNR:
             z1=np.nan
             Pp1=np.nan
-            #print('dins',snr1[l])
+        
         else:
             valuez=np.nansum(p1[l])
             if valuez<=0:
@@ -1262,10 +1198,10 @@ def ZeEval(alt,CTE,ATT,P,elva,snr,raindetc):#nomes ho trobo pel valor de beam 1
 
     return ze1
     
-#def WindEval(v1,v2,v3,v4,v5,alt,elva,snr1,snr2,snr3,snr4,snr5):
-def WindEval(V,alt,elva,Nbeam):
+
+def WindEval(V,alt,elva,Nbeam,Az):
     
-##    print(v1,len(v1));print(v2,len(v2));print(v3,len(v3));print(v4,len(v4));print(v5,len(v5))
+
     LimitUV=50.#Differences limit for longitudinal and vertical speed (m/s)
     
     
@@ -1282,25 +1218,50 @@ def WindEval(V,alt,elva,Nbeam):
         v2=np.asarray(V[1],float)
         Covr2=interpolate(v2,alt,elva)
         u=[];v=[];#modeule of vertical and horizontal wind
-        for i in range(len(alt)):
-            estv=(Covr2[i])/(-1.*np.cos(np.pi*elva/180))
-            if estv>LimitUV:
-                estv=np.nan
-            
-            u.append(np.nan)
-            v.append(estv)
+        if Az[1]==0.:
+            for i in range(len(alt)):
+                estv=(Covr2[i])/(np.cos(np.pi*elva/180))
+                if estv>LimitUV:
+                    estv=np.nan
+                
+                u.append(np.nan)
+                v.append(estv)
+        else:#case where the azimut isn't 0 degrees. The azimut is the angle respect North
+            for i in range(len(alt)):
+                estv=np.cos(np.pi*Az[1]/180)*(Covr2[i])/(np.cos(np.pi*elva/180))
+                estu=np.sin(np.pi*Az[1]/180)*(Covr2[i])/(np.cos(np.pi*elva/180))
+                if estu>LimitUV:
+                    estu=np.nan
+                if estv>LimitUV:
+                    estv=np.nan
+                
+                u.append(estu)
+                v.append(estv)
+
     if Nbeam==3:
         v2=np.asarray(V[1],float)
         v3=np.asarray(V[2],float)
         Covr2=interpolate(v2,alt,elva)
         Covr3=interpolate(v3,alt,elva)
         u=[];v=[];#modeule of vertical and horizontal wind
-        for i in range(len(alt)):
-            estv=(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
-            if estv>LimitUV:
-                estv=np.nan
-            u.append(np.nan)
-            v.append(estv)
+        if Az[2]==180.:
+            for i in range(len(alt)):
+                estv=(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                if estv>LimitUV:
+                    estv=np.nan
+                u.append(np.nan)
+                v.append(estv)
+        else:
+            for i in range(len(alt)):
+                estv=-1.*(np.cos(np.pi*Az[2]/180)*Covr3[i]-np.cos(np.pi*Az[1]/180)*Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu=-1.*(np.sin(np.pi*Az[2]/180)*Covr3[i]-np.sin(np.pi*Az[1]/180)*Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                if estv>LimitUV:
+                    estv=np.nan
+                if estu>LimitUV:
+                    estu=np.nan
+                u.append(estu)
+                v.append(estv)
+
        
     if Nbeam==4:
         v2=np.asarray(V[1],float)
@@ -1311,16 +1272,34 @@ def WindEval(V,alt,elva,Nbeam):
         Covr4=interpolate(v4,alt,elva)
 
         u=[];v=[];#modeule of vertical and horizontal wind
-        for i in range(len(alt)):
-            estv=(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
-            estu=(Covr4[i])/(-1.*np.cos(np.pi*elva/180))
-            if estv>LimitUV:
-                estv=np.nan
-            if estu>LimitUV:
-                estu=np.nan
-            
-            u.append(estu)
-            v.append(estv)
+        if Az[3]==90.:
+            for i in range(len(alt)):
+                estv=np.cos(np.pi*Az[2]/180)*(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
+
+                estu=(Covr4[i])/(-1.*np.cos(np.pi*elva/180))
+                if estv>LimitUV:
+                    estv=np.nan
+                if estu>LimitUV:
+                    estu=np.nan
+                
+                u.append(estu)
+                v.append(estv)
+                
+
+        else:
+            for i in range(len(alt)):
+                estv=-1.*(np.cos(np.pi*Az[2]/180)*Covr3[i]-np.cos(np.pi*Az[1]/180)*Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu_2=-1.*(np.sin(np.pi*Az[2]/180)*Covr3[i]-np.sin(np.pi*Az[1]/180)*Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu=np.cos(np.pi*Az[3]/180)*(Covr4[i])/(np.cos(np.pi*elva/180))
+                estv_2=np.sin(np.pi*Az[3]/180)*(Covr4[i])/(-1.*np.cos(np.pi*elva/180))
+                Est_V=estv+est_v2;Est_U=estu+est_u2
+                if Est_V>LimitUV:
+                    Est_V=np.nan
+                if Est_V>LimitUV:
+                    Est_U=np.nan
+                
+                u.append(Est_U)
+                v.append(Est_V)
                 
         
     if Nbeam==5:
@@ -1334,34 +1313,48 @@ def WindEval(V,alt,elva,Nbeam):
         Covr5=interpolate(v5,alt,elva)
 
         u=[];v=[];#modeule of vertical and horizontal wind
-        for i in range(len(alt)):
-            estv=(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
-            estu=(Covr5[i]-Covr4[i])/(2.*np.cos(np.pi*elva/180))
-            if estv>LimitUV:
-                estv=np.nan
-            if estu>LimitUV:
-                estu=np.nan
-            
-            u.append(estu)
-            v.append(estv)
-                
-    #m_U=Deletesporius(u)#positive to east, negative to west
-    #m_V=Deletesporius(v)#positive north, negative south
-    
+        if Az[4]==270.:
 
-    
+            for i in range(len(alt)):
+                estv=-1.*(Covr3[i]-Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu=-1.*(Covr5[i]-Covr4[i])/(2.*np.cos(np.pi*elva/180))
+                if estv>LimitUV:
+                    estv=np.nan
+                if estu>LimitUV:
+                    estu=np.nan
+                
+                u.append(estu)
+                v.append(estv)
+        else:
+            for i in range(len(alt)):
+##                print(' intep 2, 3, 4 i 5 ',round(Covr2[i],1),round(Covr3[i],1),round(Covr4[i],1),round(Covr2[5],1))
+                estv=-1.*(np.cos(np.pi*Az[2]/180)*Covr3[i]-np.cos(np.pi*Az[1]/180)*Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu_2=-1.*(np.sin(np.pi*Az[2]/180)*Covr3[i]-np.sin(np.pi*Az[1]/180)**Covr2[i])/(2.*np.cos(np.pi*elva/180))
+                estu=-1.*(np.cos(np.pi*Az[4]/180)*Covr5[i]-np.cos(np.pi*Az[3]/180)*Covr4[i])/(2.*np.cos(np.pi*elva/180))
+                estv_2=(np.sin(np.pi*Az[4]/180)*Covr5[i]-np.sin(np.pi*Az[3]/180)*Covr4[i])/(2.*np.cos(np.pi*elva/180))
+                Est_V=estv+estv_2;Est_U=estu+estu_2
+                if Est_V>LimitUV:
+                    Est_V=np.nan
+                if Est_V>LimitUV:
+                    Est_U=np.nan
+                
+                u.append(Est_U)
+                v.append(Est_V)
+
     
     return u,v
 
 
 def interpolate(Radialvector,alt,angle):
+
     vector=np.copy(Radialvector)
     Nalt=alt*np.sin(np.pi*angle/180.)
+    
     if np.isnan(vector).all():
-##        print('dins',vector)
+
         vinterp=np.ones(len(vector))*np.nan
     else:
-        #vinterp=np.interp(np.arange(len(vector)),np.arange(len(vector))[np.isnan(vector) == False],vector[np.isnan(vector) == False])
+
         vinterp=np.interp(alt,Nalt,vector)
     
 
@@ -1383,29 +1376,23 @@ def ReadSpectrums(Valors,gates,nfft,eix,eixR):#The signal is quantificate with i
         vector=Spectr[i]
                 
         vectorI=np.asarray(vector)
-##        IS NECESSARY DELETE THE VALUES FOR V=0, index 63-64-65, Not it'is necessary
-        #vectorCs=np.copy(vectorI)
-        #vectorCs[63:66]=np.nan
-        #vectorC=np.interp(np.arange(len(vectorCs)),np.arange(len(vectorCs))[np.isnan(vectorCs) == False],vectorCs[np.isnan(vectorCs) == False])#new array where the values 63,64 and 65 are interpolated
-        #vectorP=np.copy(vectorC)
         vectorP=np.copy(vectorI)
         
         LenSignal=len(vector)
         MinSignal=[]
 
-        #divideixo la senyal en 32, aixi que cada mostra tindra 4 valors
+        #The signal is divided by 32, so each subsignal has 4 values
         for m in range(int(LenSignal/8)):
             WorkingVector=vectorP[m*16:16*(m+1)]
             MinSignal.append(np.nanmean(WorkingVector))
         NoiseW=np.nanmin(MinSignal)
-##        print('soroll',NoiseW,'dv',dv)
+
         Noi.append(NoiseW)
                    
-##        print('nois in dB from w',10*np.log10(NoiseW*dv))
-        #valNoidB=10*np.log10(NoiseW*dv)#is multiplicated by 10 because is noise from power
+
         valNoidB=10*np.log10(NoiseW)#is multiplicated by 10 because is noise from power, he tret el dv
         
-##        print('soroll dB',valNoidB)
+
         Snr_pro=10.*np.log(np.nansum(vectorP)/NoiseW)
         if Snr_pro<=5.:#if the signal has higher noise is deleted, if SNR<5 --> sum(signal)>3*Noise
             SpectrF.append(np.ones(len(vectorP))*np.nan)
@@ -1418,11 +1405,11 @@ def ReadSpectrums(Valors,gates,nfft,eix,eixR):#The signal is quantificate with i
             if eix[0]>eixR[0]:
                 for o in range(len(eix)):
                     if eix[0]<eixR[o] and cond==True:
-    ##                    print('index minim', o)
+
                         indMin=o
                         cond=False
                     if eix[-1]<eixR[o]:
-    ##                    print('index maxim', o)
+
                         indMax=o
                         break
                 carc=np.concatenate([np.ones(indMin)*np.nan,np.ones(indMax-indMin),np.nan*np.ones(len(eix)-indMax)])
@@ -1437,7 +1424,7 @@ def ReadSpectrums(Valors,gates,nfft,eix,eixR):#The signal is quantificate with i
 
 def convertHalfFloat(OldArray,Nele):#Nele is the number of elements. This fucntion must be optimized (in 524 files the time is 4 minutes)
     OldArray=bytearray(OldArray)
-    #print(OldArray)
+
     array=[hex(x)[2:].zfill(2) for x in OldArray]#convert the array to hex
 
     test=np.asarray(array)
@@ -1501,7 +1488,7 @@ def Caract(fileid):
     Any=int(Header[15])
     Mes=int(Header[21])
     Dia=int(Header[20])
-
+    
     if Mes<10:
         mes='0'+str(Mes)
     else:
@@ -1510,7 +1497,6 @@ def Caract(fileid):
         dia='0'+str(Dia)
     else:
         dia=str(Dia)
-
 
     FileNameOut=str(Any)+str(mes)+str(dia)
 
@@ -1523,44 +1509,81 @@ def Caract(fileid):
     lenHe=int(Header[0])
     nptsp=int(Header[4])
     freq=int(Header[25])/10.
+    #####READ ALL FILE TO FIND THE NUMBER OF BEAMS AND MODE
+    count=0
+    n_beam=[]
+    canvi=0;Offset=0;CONT=0;Count_Byte=0
+    while True:
+        if count==0:
+            total_len=totalbeam
 
-    
+        header=np.ndarray((Size,),dtype='<i2',buffer=byte[Offset+(total_len*count):Offset+(total_len*(count+1)*2)])
+##        for i in range(len(list1)):
+##            print(list1[i],' ', header[i],i)
 
-    BEAM=np.modf(TotalBytes/float(totalbeam))
+        if header[9]!=Header[9] and canvi==0:
+            canvi=1
+            total_len2=int(header[1])
+            Offset=total_len*count
+            CONT=count
+            count=0
+            Count_Byte=Offset
 
-    off=False
+            header=np.ndarray((Size,),dtype='<i2',buffer=byte[Offset:Offset+(total_len2*(count+1)*2)])
 
-    if BEAM[0]==0:
 
-        numberBeams=int(BEAM[1])
-        Gatesnumber=int(Header[2])
-        NMODE=1
-        #print('number of de beams',numberBeams)
         
+        total_len=int(header[1])
+        n_beam.append(int(header[26]))
+        count+=1
 
-    else:
+        if TotalBytes==Count_Byte+total_len*count:
+            break
+   
+
+    numberBeams=np.max(n_beam)+1
+    NMODE=int((1+len(n_beam))/(1+np.max(n_beam)))
+##    print('numero de beams',numberBeams)
+##    print('numero de modes',NMODE)
+    ###########################
+            
+    if NMODE==2.:
 
         count=0
-        #print('mida de llsita',len(list1))
-        while off==False:
+
+        while True:
+            
             header=np.ndarray((Size,),dtype='<i2',buffer=byte[totalbeam*count:totalbeam*(count+1)*2])
-            if int(header[1])!=totalbeam:
-                numberBeams=count
-                GatesnumberL=int(header[2])
+            
+
+            if header[9]!=Header[9]:
+                
+                
                 GatesnumberH=int(Header[2])
-                off=True
-                NMODE=2
-                #print('number of de beams',numberBeams)
+                GatesnumberL=int(header[2])
+     
+                break
+                
                 
             else:
                 count=count+1
+        
+     
 
-    
+    else:
+
+        
+        header=np.ndarray((Size,),dtype='<i2',buffer=byte[0:totalbeam])
+            
+        GatesnumberH=int(header[2])
+        GatesnumberL=np.nan
 
     return GatesnumberH,GatesnumberL,numberBeams,longitude,latitude,NMODE,nptsp,freq,FileNameOut
 
 def Read1File(NameFile,freqR,nciR,beams):#read the file
     
+
+##    print('nombre de beams trobats',beams)
     if beams==5:
         Pbeam1=[];Pbeam2=[];Pbeam3=[];Pbeam4=[];Pbeam5=[]
     if beams==4:
@@ -1591,23 +1614,20 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
     N_Pic=int(Header[45])
     NSPEC=int(Header[5])#number of inchorent integrations
 
-##    print('intgr incohe',int(Header[5]))
-    
-    
     
     Type='High'
     Contador=0
     NewOffset=0
     TamanyFitxer=0
-    Atenu=[]
+    Atenu=[];Az=[]
     
     while True:
 
                 
-        LenMoments=((4*N_Pic)+1)*NHTS#fiquem 4 perque tenim vel,sig,noise,snr,skew. he tret la quality
+        LenMoments=((4*N_Pic)+1)*NHTS#the value of 4 is imposed because we don't want the quality value, so we get vel,sig,noise,snr,skew.
         OffsetValues=(LenMoments+Size)*2
         LonTrama=(Size+LenMoments+(NPTSP*NHTS))*2
-        #the moments are not necessary toi read, because then we process the signal
+        #the moments are not necessary to read, because then we process the signal
         #Moments=convertHalfFloat(byte[NewOffset+(LonTrama*Contador)+(Size*2):NewOffset+(LonTrama*Contador)+2*(Size+LenMoments)],LenMoments*2)
         
         
@@ -1621,24 +1641,21 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
         Att=int(Header[75])#read the attenuation existence
         #print('Is there attenuation?',Att)
         Atenu.append(Att)
-        
 
-##        print(Header)
         Any=int(Header[15])
         Mes=int(Header[21])
         Dia=int(Header[20])
         Hora=int(Header[17])
         Min=int(Header[18])
         Sec=int(Header[19])
-##        print(Any,Mes,Dia,Hora,Min,Sec)
+
 
         dat=datetime.datetime(year=Any,month=Mes,day=Dia,hour=Hora,minute=Min,second=Sec)
-######        print('data',dat)
         dat=int(date2unix(dat))
 
         TimestampTitle=Type+'-'+str(Any)+str(Mes)+str(Dia)+'--'+str(Hora)+'-'+str(Min)+'-'+str(Sec)
         
-        ##CALCULO ALGUNS PAARAMETRES
+        ##Some parameters
            
         pp=int(Header[7])*int(Header[32])*(10**-9)
         fri=1/pp
@@ -1646,7 +1663,7 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
         ncivrai=int(Header[6])*int(Header[63])*int(Header[41])#is possible that it is wrong
 ##        ncivrai=int(Header[5])
         freq=int(Header[25])/10.
-        #print('frequencia',freq)
+        
 ##CALCULATE THE REFERENCE VALUES
         friRef=freqR
         ncivraiRef=nciR
@@ -1657,19 +1674,23 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
         Vamb=(fri*c)/(4*ncivrai*freq*(10**6))
 
         dv=2*Vamb/int(Header[4])
-##        print('increment vel',dv,ncivrai,freq,c,fri)
         eixV=np.arange(-Vamb,Vamb,dv)
        
         Tprt1=int(Header[9])*int(Header[32])*(10**-9)-int(Header[29])*(10**-9)
 
         Sprt1=(c/2)*(Tprt1-int(Header[8])*int(Header[32])*(10**-9)*(int(Header[42])-0.5))
         dh=(c/2)*(int(Header[10])*int(Header[32])*(10**-9))
-        hmax=Sprt1+(int(Header[2])-1)*dh
-        H=np.arange(0,hmax,dh)
+##        hmax=Sprt1+(int(Header[2])-1)*dh
+        H=np.arange(0,int(Header[2])*dh,dh)+float(Header[27])
+        if len(H)!=int(Header[2]):
+
+            H=H[:-1]
 ####        READ SOME PARAMETERS
         az=int(Header[24])/10.#azimut from beam
-        el=int(Header[28])/10.# la elevacio del haz
+        el=int(Header[28])/10.# Beam Elevation respect earth
+
         pluie=int(Header[54])#it is the same value for all beams, 1 with rain, 0 wihtout rain
+
         
         
 
@@ -1677,31 +1698,37 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
         if el==90 and az==0:
             Pbeam1,NoidB1,Noi1=ReadSpectrums(Values,NHTS,NPTSP,eixV,eixVRef)
             #M1=Moments
+
+            Az.append(az)
             
             
-        if el!=90 and az==0:
+        if el!=90 and (az>=0 and az<90):
             Pbeam2,NoidB2,Noi2=ReadSpectrums(Values,NHTS,NPTSP,eixV,eixVRef)
             #M2=Moments
             elev=el
+            Az.append(az)
 
-        if el!=90 and az==180:
+        if el!=90 and (az>=180 and az<270):
             Pbeam3,NoidB3,Noi3=ReadSpectrums(Values,NHTS,NPTSP,eixV,eixVRef)
             #M3=Moments
+            Az.append(az)
             
                 
-        if el!=90 and az==90:
+        if el!=90 and (az>=90 and az<180):
 ##            print('dins 4')
             Pbeam4,NoidB4,Noi4=ReadSpectrums(Values,NHTS,NPTSP,eixV,eixVRef)
             #M4=Moments
+            Az.append(az)
 ##            print('fora 4')
                 
-        if el!=90 and az==270:
+        if el!=90 and (az>=270 and az<360):
             Pbeam5,NoidB5,Noi5=ReadSpectrums(Values,NHTS,NPTSP,eixV,eixVRef)
             #M5=Moments
+            Az.append(az)
  
 
-        ##tornem a llegir el arxiu
-        if TamanyFitxer>=len(byte)/2:
+        ##Read again the file
+        if TamanyFitxer>=len(byte)/2:#It is necessary to chechk##########################################
 
             break
 
@@ -1710,8 +1737,8 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
 
         Header2=np.ndarray((Size,),dtype='<i2',buffer=byte[NewOffset+(LonTrama*Contador):NewOffset+(LonTrama*Contador)+(Size*2)])
         
-    ######Loop to detect the height change
-        if int(Header2[2])==int(Header[2]):
+    ######Loop to detect the height change with the parameter SPAC1
+        if int(Header2[9])==int(Header[9]):
             Header=Header2
         else:
             #start the low mode
@@ -1767,15 +1794,15 @@ def Read1File(NameFile,freqR,nciR,beams):#read the file
         NoidBh=np.asarray([NoidB1h]);NoidBl=np.asarray([NoidB1]);Noih=np.asarray([Noi1h]);Noil=np.asarray([Noi1])
         Ph=np.asarray([P1h]);Pl=np.asarray([Pbeam1])
     
-##    print('leng',len(P1h),len(P2h),len(P3h),len(P4h),len(P5h),len(Pbeam1),len(Pbeam2),len(Pbeam3),len(Pbeam4),len(Pbeam5))
-    return Ph,Pl,eixVRef,hig,elev,H,att_h,Atenu,dat,NSPEC,pluie,NoidBh,NoidBl,Noih,Noil#,pluie1h,pluie2h,pluie3h,pluie4h,pluie5h,pluie1,pluie2,pluie3,pluie4,pluie5#dat is the time mark for the last beam
 
-def peaksfinder2(vector):#funcio per detectar el pic o pics de la senyal
+    return Ph,Pl,eixVRef,hig,elev,H,att_h,Atenu,dat,NSPEC,pluie,NoidBh,NoidBl,Noih,Noil,Az#,pluie1h,pluie2h,pluie3h,pluie4h,pluie5h,pluie1,pluie2,pluie3,pluie4,pluie5#dat is the time mark for the last beam
+
+def peaksfinder2(vector):#Function to detect the peak or peaks from signal
     v1=np.copy(vector)
     std1=np.nanstd(v1)
     v_final=np.ones(len(v1))*np.nan
-    #v1[v1<np.nanmean(v1)+0.*std1]=np.nan
-    #trobo la posició dels dos màxims
+    
+    #Fins the maximun position
     if ~np.isnan(v1).all():
         Ind1=np.nanargmax(v1)
         val1=np.nanmax(v1)
@@ -1898,7 +1925,6 @@ if len(sys.argv)>1:
 
 Count_t0=dt.datetime.now()
 tt00=dt.datetime.now()
-##print(dt.datetime.now())
 
 print('Insert the path where the dat files are --for instance d:/UHF/')
 Root=input()  #input from the user 
@@ -1955,10 +1981,6 @@ for name in d:
 
 FreqRef=Fri[np.argmin(NciTotal)]
 NCIref=min(NciTotal)
-##print('frequency repetition impulse',FreqRef,' ncivrai', NCIref)
-#print('read all files fi',dt.datetime.now())
-##TiF=TimeIntervalFile(d[0],FreqRef,NCIref)
-
 
 
 ####STARTING THE NETCDF FILE
@@ -2052,30 +2074,24 @@ for name in d:
     
     
 
-    #print('Read 1 file ini',dt.datetime.now())
-    MaxClose=3#valor respecte la std,Bernard aconsella 3#ATEMCIO VALOR MOLT IMPORTANT
+
+    MaxClose=3#Value realtive to std, Bernard advice the value 3#Atention this value is very important
     Count_t1=dt.datetime.now()
-##    print('arxiu analitzat',name)
-    PH,PL,velX,H,eleva,h,att_h,att_l,TimeStamp,NUMINT,Pluie,noidBh,noidBl,noih,noil=Read1File(name,FreqRef,NCIref,NBeams)
-##    if c3_op==1:
-##        H=H+h0_opt
-##        h=h+h0_opt
 
-
-    #print('parametre pluja',Pluie,unix2date(TimeStamp))
+    PH,PL,velX,H,eleva,h,att_h,att_l,TimeStamp,NUMINT,Pluie,noidBh,noidBl,noih,noil,azimut=Read1File(name,FreqRef,NCIref,NBeams)
     
 
-    p_h,z_h,c2n_h,vel_h,velM_h,sig_h,sk_h,kur_h,snr_h,mask_h,v_air_h,v_hidro_h=PeaksAll(PH,H,velX,noih,att_h,cte_high,TimeStamp)#llegim i treiem els paràmetres
+    p_h,z_h,c2n_h,vel_h,velM_h,sig_h,sk_h,kur_h,snr_h,mask_h,v_air_h,v_hidro_h=PeaksAll(PH,H,velX,noih,att_h,cte_high,TimeStamp)#Read and get the paremeters in high mode
     
 
-    p_l,z_l,c2n_l,vel_l,velM_l,sig_l,sk_l,kur_l,snr_l,mask_l,v_air_l,v_hidro_l=PeaksAll(PL,h,velX,noil,att_l,cte_low,TimeStamp)#llegim i treiem els paràmetres
+    p_l,z_l,c2n_l,vel_l,velM_l,sig_l,sk_l,kur_l,snr_l,mask_l,v_air_l,v_hidro_l=PeaksAll(PL,h,velX,noil,att_l,cte_low,TimeStamp)#Read and get the paremeters in low mode
     
-    U_h,V_h=WindEval(velM_h,H,eleva,NBeams)
+    U_h,V_h=WindEval(velM_h,H,eleva,NBeams,azimut)
     
     alfa1_h,alfa2_h,alfa3_h=ratioRo(H,h0_opt)
     mu_h,A_h,N0_h,R_h,Cw_h,Hkef_h,Vkef_h=rainrate(alfa1_h,alfa2_h,alfa3_h,velM_h[0],z_h[0],U_h,V_h)
 
-    U_l,V_l=WindEval(velM_l,h,eleva,NBeams)
+    U_l,V_l=WindEval(velM_l,h,eleva,NBeams,azimut)
     
     alfa1_l,alfa2_l,alfa3_l=ratioRo(h,h0_opt)
     mu_l,A_l,N0_l,R_l,Cw_l,Hkef_l,Vkef_l=rainrate(alfa1_l,alfa2_l,alfa3_l,velM_l[0],z_l[0],U_l,V_l)
@@ -2141,25 +2157,17 @@ for name in d:
         nc_ranges_L[:]=np.array(h,dtype='f4')
     
     nc_ranges_Nbins[:]=np.arange(0,nptsp,1)
-##    print(NPTSP)
-##    print(np.arange(0,128,1),len(np.arange(0,128,1)))
 
     
+    ncShape2DH = ('time_utc','Hi_height',)#Matrix to high mode
+    ncShape2DL = ('time_utc','Low_height',)#Matrix to low mode
 
-    
-    ncShape2DH = ('time_utc','Hi_height',)#per muntar les altures
-    ncShape2DL = ('time_utc','Low_height',)
-####    ncShape2DMeanH = ('time_utc_M','Hi_height',)#per muntar les altures
-####    ncShape2DMeanL = ('time_utc_M','Low_height',)
     ncShape3D=('time_utc','Hi_height','Number_Bins',)
     ncShape3Dlow=('time_utc','Low_height','Number_Bins',)
     
     if count==0:
 ######        We declare the variables
 ##        in high mode
-
-        
-
 
         ###COMBINED SPEED
         nc_V1_h=High.createVariable('W_high','f',ncShape2DH)
@@ -2250,7 +2258,7 @@ for name in d:
         nc_C2n_h.description=' refractive index for high mode in log'
         nc_C2n_h.units='log(m(-2/3))'
 
-####HO TREC PER ANAR MES RÀPID EN LES PROBES
+
         if NBeams==1 and c1_op==1:
             nc_P0h=Origin.createVariable('P_0_hm','f',ncShape3D)
             nc_P0h.description='Potency without noise from beam 0, vertical, in high mode'
@@ -2360,21 +2368,11 @@ for name in d:
         
 ##        in average mode low
         
-##        nc_Mask_l=Low.createVariable('Mask_low','f',ncShape2DMeanL)
-##        nc_Mask_l.description='mascara en low'
-##        nc_Mask_l.units='none'
+
         ##SPEED COMBINED FRO AIR AND HIDRO
         nc_V1_l=Low.createVariable('W_low','f',ncShape2DL)
         nc_V1_l.description='Vertical air and hidrometeor speed, where negative is upward movement, in low mode'
         nc_V1_l.units='m/s'
-        ##SPEED COMBINED FROM AIR
-##        nc_V1_air_l=Low.createVariable('W_air_low','f',ncShape2DL)
-##        nc_V1_air_l.description='Vertical air speed, where negative is upward movement, in low mode'
-##        nc_V1_air_l.units='m/s'
-##        ##SPEED COMBINED FROM HIDRO
-##        nc_V1_hidro_l=Low.createVariable('W_hidro_low','f',ncShape2DL)
-##        nc_V1_hidro_l.description='Vertical hidrometeor speed, where negative is upward movement, in low mode'
-##        nc_V1_hidro_l.units='m/s'
 
         nc_Sig1_l=Low.createVariable('Spectral width_low','f',ncShape2DL)
         nc_Sig1_l.description='Spectral width from the Vertical air speed'
@@ -2445,11 +2443,6 @@ for name in d:
         nc_C2n_l.description='Refractive index for low mode in log'
         nc_C2n_l.units='log(m(-2/3))'
 
-
-        
-
-########O TREC PER ANAR MES RAPID EN LE SPROBES
-##The number of beams is the same in low and high mode
     
     if NBeams==1  and c1_op==1:
         nc_P0h[count,:,:]=np.array(np.ma.masked_invalid(PH_c[0]),dtype='f4')
